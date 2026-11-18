@@ -1,0 +1,520 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Flashcards-Nihongo</title>
+  <style>
+    :root {
+      --green: #58cc02;
+      --green-dark: #46a302;
+      --ink: #263238;
+      --muted: #718087;
+      --line: #e3e9ec;
+      --bg: #f5f8fa;
+      --blue: #2b83c6;
+      --red: #d94a4a;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      padding: 24px 16px;
+      display: grid;
+      place-items: center;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+    }
+
+    button { font: inherit; cursor: pointer; }
+
+    .app { width: min(100%, 560px); }
+
+    .home, .result {
+      padding: 26px;
+      background: white;
+      border: 2px solid var(--line);
+      border-bottom-width: 5px;
+      border-radius: 24px;
+    }
+
+    .home h1 {
+      margin: 0 0 24px;
+      text-align: center;
+      font-size: clamp(1.6rem, 6vw, 2rem);
+    }
+
+    .deck-list { display: grid; gap: 12px; }
+
+    .deck-button {
+      width: 100%;
+      padding: 15px 17px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      text-align: left;
+      color: var(--ink);
+      background: white;
+      border: 2px solid var(--line);
+      border-bottom-width: 4px;
+      border-radius: 16px;
+    }
+
+    .deck-button:hover { border-color: #b8d9a2; }
+
+    .deck-name { display: block; font-size: 1.1rem; font-weight: 800; }
+    .deck-count { color: var(--muted); font-size: .85rem; }
+    .deck-arrow { color: var(--green-dark); font-size: 1.3rem; font-weight: 800; }
+
+    .game { width: 100%; }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin: 0 2px 12px;
+    }
+
+    .topbar h1 { margin: 0; font-size: 1.2rem; }
+    .counter { color: var(--muted); font-size: .95rem; white-space: nowrap; }
+
+    .progress-track {
+      height: 12px;
+      margin-bottom: 18px;
+      overflow: hidden;
+      border-radius: 999px;
+      background: #e2e8eb;
+    }
+
+    .progress-fill {
+      width: 0;
+      height: 100%;
+      border-radius: inherit;
+      background: var(--green);
+      transition: width 180ms ease;
+    }
+
+    .card {
+      width: 100%;
+      min-height: 300px;
+      padding: 24px 18px;
+      display: grid;
+      place-items: center;
+      text-align: center;
+      background: white;
+      border: 2px solid var(--line);
+      border-bottom-width: 5px;
+      border-radius: 22px;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .card:active {
+      transform: translateY(2px);
+      border-bottom-width: 3px;
+    }
+
+    .side-label {
+      margin-bottom: 16px;
+      color: var(--muted);
+      font-size: .9rem;
+      font-weight: 750;
+    }
+
+    .japanese {
+      font-size: clamp(4rem, 18vw, 7rem);
+      line-height: 1.15;
+      font-weight: 750;
+    }
+
+    .romaji {
+      margin-bottom: 10px;
+      color: var(--blue);
+      font-size: clamp(1.8rem, 8vw, 2.6rem);
+      font-weight: 800;
+    }
+
+    .meaning {
+      font-size: clamp(1.2rem, 5vw, 1.65rem);
+      font-weight: 650;
+    }
+
+    .hint {
+      margin-top: 20px;
+      color: #8a989f;
+      font-size: .9rem;
+    }
+
+    .primary, .next-set {
+      width: 100%;
+      min-height: 50px;
+      margin-top: 14px;
+      padding: 12px 16px;
+      color: white;
+      background: var(--green);
+      border: 0;
+      border-radius: 14px;
+      box-shadow: 0 4px 0 var(--green-dark);
+      font-weight: 800;
+    }
+
+    .primary:hover, .next-set:hover { background: #4fba04; }
+
+    .answer-buttons {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-top: 14px;
+    }
+
+    .answer-button {
+      min-height: 50px;
+      border: 0;
+      border-radius: 14px;
+      font-weight: 800;
+    }
+
+    .wrong {
+      color: #a02d2d;
+      background: #ffe4e4;
+      box-shadow: 0 3px 0 #f4bcbc;
+    }
+
+    .correct {
+      color: #287000;
+      background: #e1f7d3;
+      box-shadow: 0 3px 0 #b8e99b;
+    }
+
+    .secondary {
+      display: block;
+      min-height: 46px;
+      margin: 16px auto 0;
+      padding: 10px 16px;
+      color: #52636b;
+      background: white;
+      border: 2px solid var(--line);
+      border-radius: 13px;
+      box-shadow: 0 3px 0 #d9e1e5;
+      font-weight: 750;
+    }
+
+    .result { text-align: center; }
+    .result h2 { margin: 0 0 18px; font-size: 1.8rem; }
+    .score { margin: 8px 0; font-size: 1.15rem; font-weight: 750; }
+    .score-correct { color: #398600; }
+    .score-wrong { color: var(--red); }
+
+    [hidden] { display: none !important; }
+
+    @media (max-width: 420px) {
+      .home, .result { padding: 20px; }
+      .card { min-height: 265px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <section class="home" id="home">
+      <h1>Flashcards-Nihongo</h1>
+      <div class="deck-list" id="deckList"></div>
+    </section>
+
+    <section class="game" id="game" hidden>
+      <div class="topbar">
+        <h1 id="deckTitle"></h1>
+        <span class="counter" id="counter"></span>
+      </div>
+
+      <div class="progress-track">
+        <div class="progress-fill" id="progress"></div>
+      </div>
+
+      <div
+        class="card"
+        id="card"
+        role="button"
+        tabindex="0"
+        aria-label="แตะเพื่อดูคำตอบ"
+      >
+        <div id="cardContent"></div>
+      </div>
+
+      <button class="primary" id="showAnswer">ดูคำตอบ</button>
+
+      <div class="answer-buttons" id="answerButtons" hidden>
+        <button class="answer-button wrong" id="wrongButton">ผิด</button>
+        <button class="answer-button correct" id="correctButton">ถูก</button>
+      </div>
+
+      <button class="secondary" id="homeButton">กลับหน้าเลือกหมวด</button>
+    </section>
+
+    <section class="result" id="resultScreen" hidden>
+      <h2>จบชุดท้าทาย!</h2>
+      <div class="score score-correct" id="correctScore"></div>
+      <div class="score score-wrong" id="wrongScore"></div>
+      <button class="next-set" id="newSetButton">สุ่มชุดใหม่</button>
+      <button class="secondary" id="resultHomeButton">เลือกหมวดอื่น</button>
+    </section>
+  </main>
+
+  <script>
+    const ROUND_SIZE = 10;
+
+    const hiragana = [
+      ["あ","a"],["い","i"],["う","u"],["え","e"],["お","o"],
+      ["か","ka"],["き","ki"],["く","ku"],["け","ke"],["こ","ko"],
+      ["さ","sa"],["し","shi"],["す","su"],["せ","se"],["そ","so"],
+      ["た","ta"],["ち","chi"],["つ","tsu"],["て","te"],["と","to"],
+      ["な","na"],["に","ni"],["ぬ","nu"],["ね","ne"],["の","no"],
+      ["は","ha"],["ひ","hi"],["ふ","fu"],["へ","he"],["ほ","ho"],
+      ["ま","ma"],["み","mi"],["む","mu"],["め","me"],["も","mo"],
+      ["や","ya"],["ゆ","yu"],["よ","yo"],
+      ["ら","ra"],["り","ri"],["る","ru"],["れ","re"],["ろ","ro"],
+      ["わ","wa"],["を","wo"],["ん","n"]
+    ].map(([jp, romaji]) => [jp, romaji, `เสียง ${romaji}`]);
+
+    const katakana = [
+      ["ア","a"],["イ","i"],["ウ","u"],["エ","e"],["オ","o"],
+      ["カ","ka"],["キ","ki"],["ク","ku"],["ケ","ke"],["コ","ko"],
+      ["サ","sa"],["シ","shi"],["ス","su"],["セ","se"],["ソ","so"],
+      ["タ","ta"],["チ","chi"],["ツ","tsu"],["テ","te"],["ト","to"],
+      ["ナ","na"],["ニ","ni"],["ヌ","nu"],["ネ","ne"],["ノ","no"],
+      ["ハ","ha"],["ヒ","hi"],["フ","fu"],["ヘ","he"],["ホ","ho"],
+      ["マ","ma"],["ミ","mi"],["ム","mu"],["メ","me"],["モ","mo"],
+      ["ヤ","ya"],["ユ","yu"],["ヨ","yo"],
+      ["ラ","ra"],["リ","ri"],["ル","ru"],["レ","re"],["ロ","ro"],
+      ["ワ","wa"],["ヲ","wo"],["ン","n"]
+    ].map(([jp, romaji]) => [jp, romaji, `เสียง ${romaji}`]);
+
+    const kanji = [
+      ["一","ichi","หนึ่ง"],["右","migi","ขวา"],["雨","ame","ฝน"],["円","en","เยน / วงกลม"],
+      ["王","ō","กษัตริย์"],["音","oto","เสียง"],["下","shita","ข้างล่าง"],["火","hi","ไฟ"],
+      ["花","hana","ดอกไม้"],["貝","kai","หอย"],["学","gaku","เรียน / การศึกษา"],["気","ki","จิตใจ / พลัง"],
+      ["九","kyū","เก้า"],["休","yasumu","พัก"],["玉","tama","ลูกแก้ว / ลูกบอล"],["金","kane","เงิน / ทอง"],
+      ["空","sora","ท้องฟ้า"],["月","tsuki","พระจันทร์ / เดือน"],["犬","inu","สุนัข"],["見","miru","ดู / มอง"],
+      ["五","go","ห้า"],["口","kuchi","ปาก"],["校","kō","โรงเรียน"],["左","hidari","ซ้าย"],
+      ["三","san","สาม"],["山","yama","ภูเขา"],["子","ko","เด็ก"],["四","yon","สี่"],
+      ["糸","ito","ด้าย"],["字","ji","ตัวอักษร"],["耳","mimi","หู"],["七","nana","เจ็ด"],
+      ["車","kuruma","รถ"],["手","te","มือ"],["十","jū","สิบ"],["出","deru","ออกไป"],
+      ["女","onna","ผู้หญิง"],["小","chiisai","เล็ก"],["上","ue","ข้างบน"],["森","mori","ป่าทึบ"],
+      ["人","hito","คน"],["水","mizu","น้ำ"],["正","tadashii","ถูกต้อง"],["生","sei","ชีวิต / เกิด"],
+      ["青","ao","สีน้ำเงิน / สีฟ้า"],["夕","yū","ตอนเย็น"],["石","ishi","หิน"],["赤","aka","สีแดง"],
+      ["千","sen","หนึ่งพัน"],["川","kawa","แม่น้ำ"],["先","saki","ก่อน / ข้างหน้า"],["早","hayai","เร็ว / เช้า"],
+      ["草","kusa","หญ้า"],["足","ashi","เท้า / ขา"],["村","mura","หมู่บ้าน"],["大","ōkii","ใหญ่"],
+      ["男","otoko","ผู้ชาย"],["竹","take","ต้นไผ่"],["中","naka","ข้างใน / ตรงกลาง"],["虫","mushi","แมลง"],
+      ["町","machi","เมือง / ย่าน"],["天","ten","ท้องฟ้า / สวรรค์"],["田","ta","นาข้าว"],["土","tsuchi","ดิน"],
+      ["二","ni","สอง"],["日","hi","วัน / ดวงอาทิตย์"],["入","hairu","เข้า"],["年","toshi","ปี"],
+      ["白","shiro","สีขาว"],["八","hachi","แปด"],["百","hyaku","หนึ่งร้อย"],["文","bun","ประโยค / ตัวเขียน"],
+      ["木","ki","ต้นไม้"],["本","hon","หนังสือ"],["名","na","ชื่อ"],["目","me","ตา"],
+      ["立","tatsu","ยืน"],["力","chikara","พลัง / แรง"],["林","hayashi","ป่าโปร่ง"],["六","roku","หก"]
+    ];
+
+    // คำศัพท์เดิม: [ตัวเขียน, romaji, ความหมาย]
+    const vocabulary = [
+      ["愛","ai","ความรัก"],["青","ao","สีฟ้า / สีน้ำเงิน"],["赤","aka","สีแดง"],["秋","aki","ฤดูใบไม้ร่วง"],
+      ["朝","asa","ตอนเช้า"],["足","ashi","เท้า / ขา"],["明日","ashita","พรุ่งนี้"],["頭","atama","ศีรษะ"],
+      ["あなた","anata","คุณ"],["兄","ani","พี่ชาย"],["姉","ane","พี่สาว"],["家","ie","บ้าน"],
+      ["犬","inu","สุนัข"],["今","ima","ตอนนี้"],["上","ue","ข้างบน"],["海","umi","ทะเล"],
+      ["駅","eki","สถานี"],["お金","okane","เงิน"],["お茶","ocha","ชา"],["お父さん","otōsan","คุณพ่อ"],
+      ["お名前","onamae","ชื่อ"],["顔","kao","ใบหน้า"],["傘","kasa","ร่ม"],["家族","kazoku","ครอบครัว"],
+      ["かばん","kaban","กระเป๋า"],["川","kawa","แม่น้ำ"],["木","ki","ต้นไม้"],["昨日","kinō","เมื่อวาน"],
+      ["今日","kyō","วันนี้"],["口","kuchi","ปาก"],["車","kuruma","รถยนต์"],["今朝","kesa","เช้าวันนี้"],
+      ["ここ","koko","ที่นี่"],["言葉","kotoba","คำ / ภาษา"],["魚","sakana","ปลา"],["桜","sakura","ดอกซากุระ"],
+      ["仕事","shigoto","งาน"],["下","shita","ข้างล่าง"],["白","shiro","สีขาว"],["寿司","sushi","ซูชิ"],
+      ["先生","sensei","ครู / อาจารย์"],["外","soto","ข้างนอก"],["食べる","taberu","กิน"],["父","chichi","พ่อ"],
+      ["月","tsuki","พระจันทร์ / เดือน"],["机","tsukue","โต๊ะเขียนหนังสือ"],["手","te","มือ"],["友達","tomodachi","เพื่อน"],
+      ["夏","natsu","ฤดูร้อน"],["何","nani","อะไร"],["肉","niku","เนื้อ"],["日本","nihon","ประเทศญี่ปุ่น"],
+      ["猫","neko","แมว"],["飲む","nomu","ดื่ม"],["花","hana","ดอกไม้"],["母","haha","แม่"],
+      ["人","hito","คน"],["昼","hiru","กลางวัน / เที่ยง"],["冬","fuyu","ฤดูหนาว"],["部屋","heya","ห้อง"],
+      ["本","hon","หนังสือ"],["町","machi","เมือง / ย่าน"],["水","mizu","น้ำ"],["店","mise","ร้านค้า"],
+      ["村","mura","หมู่บ้าน"],["目","me","ตา"],["森","mori","ป่า"],["山","yama","ภูเขา"],
+      ["雪","yuki","หิมะ"],["夜","yoru","กลางคืน"],["りんご","ringo","แอปเปิล"],["私","watashi","ฉัน"],
+      ["コーヒー","kōhī","กาแฟ"],["テレビ","terebi","โทรทัศน์"],["パン","pan","ขนมปัง"],["ホテル","hoteru","โรงแรม"],
+      ["タクシー","takushī","แท็กซี่"],["バス","basu","รถบัส"],["コンピューター","konpyūtā","คอมพิวเตอร์"],["レストラン","resutoran","ร้านอาหาร"]
+    ];
+
+    const hiraganaWords = [];
+    const katakanaWords = [];
+    const kanjiWords = [];
+
+    for (const item of vocabulary) {
+      const jp = item[0];
+
+      if (/[\u4E00-\u9FFF]/.test(jp)) {
+        kanjiWords.push(item);
+      } else if (/[\u30A0-\u30FF]/.test(jp)) {
+        katakanaWords.push(item);
+      } else {
+        hiraganaWords.push(item);
+      }
+    }
+
+    function uniqueCards(cards) {
+      const seen = new Set();
+      return cards.filter(card => {
+        const key = `${card[0]}|${card[1]}`;
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      });
+    }
+
+    const decks = [
+      {
+        name: "Hiragana",
+        cards: uniqueCards([...hiragana, ...hiraganaWords])
+      },
+      {
+        name: "Katakana",
+        cards: uniqueCards([...katakana, ...katakanaWords])
+      },
+      {
+        name: "คันจิ",
+        cards: uniqueCards([...kanji, ...kanjiWords])
+      }
+    ];
+
+    const home = document.getElementById("home");
+    const game = document.getElementById("game");
+    const resultScreen = document.getElementById("resultScreen");
+    const deckList = document.getElementById("deckList");
+    const card = document.getElementById("card");
+    const cardContent = document.getElementById("cardContent");
+    const counter = document.getElementById("counter");
+    const progress = document.getElementById("progress");
+    const answerButtons = document.getElementById("answerButtons");
+    const showAnswer = document.getElementById("showAnswer");
+
+    let selectedDeck = null;
+    let round = [];
+    let index = 0;
+    let flipped = false;
+    let correct = 0;
+    let wrong = 0;
+
+    function shuffle(items) {
+      const shuffled = [...items];
+
+      for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+      }
+
+      return shuffled;
+    }
+
+    function startRound(deck) {
+      selectedDeck = deck;
+      round = shuffle(deck.cards).slice(0, ROUND_SIZE);
+      index = 0;
+      correct = 0;
+      wrong = 0;
+
+      document.getElementById("deckTitle").textContent = deck.name;
+      home.hidden = true;
+      resultScreen.hidden = true;
+      game.hidden = false;
+      renderCard();
+    }
+
+    function renderCard() {
+      const [jp] = round[index];
+      flipped = false;
+
+      cardContent.innerHTML = `
+        <div class="side-label">อักษรญี่ปุ่น</div>
+        <div class="japanese" lang="ja">${jp}</div>
+        <div class="hint">แตะการ์ดหรือกด “ดูคำตอบ”</div>
+      `;
+
+      counter.textContent = `${index + 1} / ${ROUND_SIZE}`;
+      progress.style.width = `${(index / ROUND_SIZE) * 100}%`;
+      showAnswer.hidden = false;
+      answerButtons.hidden = true;
+      card.setAttribute("aria-label", "แตะเพื่อดูคำตอบ");
+    }
+
+    function flipCard() {
+      if (flipped) return;
+
+      const [jp, romaji, meaning] = round[index];
+      flipped = true;
+
+      cardContent.innerHTML = `
+        <div class="side-label" lang="ja">${jp}</div>
+        <div class="romaji">${romaji}</div>
+        <div class="meaning">${meaning}</div>
+        <div class="hint">เลือก “ถูก” หรือ “ผิด” เพื่อบันทึกคะแนน</div>
+      `;
+
+      showAnswer.hidden = true;
+      answerButtons.hidden = false;
+      card.setAttribute("aria-label", `${romaji} แปลว่า ${meaning}`);
+    }
+
+    function submitAnswer(isCorrect) {
+      if (isCorrect) correct++;
+      else wrong++;
+
+      index++;
+
+      if (index < ROUND_SIZE) {
+        renderCard();
+      } else {
+        showResults();
+      }
+    }
+
+    function showResults() {
+      game.hidden = true;
+      resultScreen.hidden = false;
+      progress.style.width = "100%";
+
+      document.getElementById("correctScore").textContent = `ตอบถูก ${correct} ข้อ`;
+      document.getElementById("wrongScore").textContent = `ตอบผิด ${wrong} ข้อ`;
+    }
+
+    function showHome() {
+      home.hidden = false;
+      game.hidden = true;
+      resultScreen.hidden = true;
+    }
+
+    decks.forEach(deck => {
+      const button = document.createElement("button");
+      button.className = "deck-button";
+      button.innerHTML = `
+        <span>
+          <span class="deck-name">${deck.name}</span>
+          <span class="deck-count">${deck.cards.length} cards</span>
+        </span>
+        <span class="deck-arrow" aria-hidden="true">→</span>
+      `;
+      button.addEventListener("click", () => startRound(deck));
+      deckList.appendChild(button);
+    });
+
+    card.addEventListener("click", flipCard);
+    card.addEventListener("keydown", event => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        flipCard();
+      }
+    });
+
+    showAnswer.addEventListener("click", flipCard);
+    document.getElementById("correctButton").addEventListener("click", () => submitAnswer(true));
+    document.getElementById("wrongButton").addEventListener("click", () => submitAnswer(false));
+    document.getElementById("homeButton").addEventListener("click", showHome);
+    document.getElementById("resultHomeButton").addEventListener("click", showHome);
+    document.getElementById("newSetButton").addEventListener("click", () => startRound(selectedDeck));
+  </script>
+</body>
+</html>
