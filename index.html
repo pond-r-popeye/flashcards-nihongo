@@ -316,7 +316,7 @@
       ["立","tatsu","ยืน"],["力","chikara","พลัง / แรง"],["林","hayashi","ป่าโปร่ง"],["六","roku","หก"]
     ];
 
-    // คำศัพท์เดิม: [ตัวเขียน, romaji, ความหมาย]
+    // คำศัพท์: [ตัวเขียน, romaji, ความหมาย]
     const vocabulary = [
       ["愛","ai","ความรัก"],["青","ao","สีฟ้า / สีน้ำเงิน"],["赤","aka","สีแดง"],["秋","aki","ฤดูใบไม้ร่วง"],
       ["朝","asa","ตอนเช้า"],["足","ashi","เท้า / ขา"],["明日","ashita","พรุ่งนี้"],["頭","atama","ศีรษะ"],
@@ -441,18 +441,26 @@
       });
     }
 
-    const decks = [
+      const decks = [
       {
         name: "Hiragana",
-        cards: uniqueCards([...hiragana, ...hiraganaWords])
+        countLabel: `${hiragana.length} cards`,
+        cards: hiragana
       },
       {
         name: "Katakana",
-        cards: uniqueCards([...katakana, ...katakanaWords])
+        countLabel: `${katakana.length} cards`,
+        cards: katakana
       },
       {
         name: "คันจิ",
-        cards: uniqueCards([...kanji, ...kanjiWords])
+        countLabel: `${kanji.length} cards`,
+        cards: kanji
+      },
+      {
+        name: "Vocabulary",
+        countLabel: `${vocabulary.length} words`,
+        cards: vocabulary
       }
     ];
 
